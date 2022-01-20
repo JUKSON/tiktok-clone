@@ -1,26 +1,51 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import SignUp from "pages/SignUp";
+import { useState } from "react";
+import LogIn from "pages/LogIn";
+import { User } from "firebase/auth";
+import useUser from "context/userContext";
+import Loading from "components/Loading";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Feed from "pages/Feed";
+import Header from "components/Header";
+import Upload from "pages/Upload";
+import Profile from "pages/Profile";
+import VideoPost from "pages/VideoPost";
+import NotFound from "pages/NotFound";
 
-function App() {
+const App = () => {
+  const { user, isLoading } = useUser();
+
+  if (isLoading) {
+    return <Loading />;
+  }
+
+  return user ? <Auth /> : <UnAuth />;
+};
+
+const Auth = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Header />
+      <Routes>
+        <Route path="/" element={<Feed />} />
+        <Route path="/upload" element={<Upload />} />
+        <Route path="/:username" element={<Profile />} />
+        <Route path="/:username/video/:postId" element={<VideoPost />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Router>
   );
-}
+};
+
+const UnAuth = () => {
+  const [isNewUser, setNewUser] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  return isNewUser ? (
+    <SignUp user={user} />
+  ) : (
+    <LogIn setNewUser={setNewUser} setUser={setUser} />
+  );
+};
 
 export default App;
